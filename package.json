@@ -1,0 +1,26 @@
+{
+  "name": "gimmedatslackbot",
+  "version": "1.0.0",
+  "description": "Slackbot that serves mysterious JSON data",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "bot-data": "bot-data.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krzychuz/GimmeDatSlackBot.git"
+  },
+  "keywords": [
+    "slackbot"
+  ],
+  "author": "Krzysiek Zabawa",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/krzychuz/GimmeDatSlackBot/issues"
+  },
+  "homepage": "https://github.com/krzychuz/GimmeDatSlackBot#readme",
+  "dependencies": {
+    "slackbots": "^1.1.0"
+  }
+}
