@@ -9,12 +9,16 @@ const bot = new SlackBot({
 
 const SlackChannel = 'zasciankowemenu';
 const WelcomeMessage = 'Eloszka, przygotujcie się na to, że dostaniecie dzisiejsze menu :3';
-const HelpMessage = `Napisz '@zascianekbot menu' aby dostać informację o dzisiejszym menu.`;
+const HelpMessage = `Napisz '@zascianekbot dzisiaj' aby dostać informację o dzisiejszym menu.`;
+const ZascianekKeyword = 'dzisiaj';
+const HelpKeyword = 'pomoc';
+
+const GimmeDatAPIEndpoint = 'http://localhost:51916/api/ZascianekData';
 
 // Start handler
 bot.on('start', () => {
     const params = {
-        icon_emoji: ':cat:'
+        icon_emoji: ':robot_face:'
     };
     
     bot.postMessageToGroup(
@@ -34,53 +38,45 @@ bot.on('message', data => {
     }
   
     handleMessage(data.text);
-    console.log(data);
   });
 
 // Message responder
 function handleMessage(messageText) {
-    if(messageText.includes(' menu')) {
+    if(messageText.includes(ZascianekKeyword)) {
         serveMenu();
     }
-    if(messageText.includes(' chucknorris')) {
-        tellChuckNorrisJoke();
-    }
-    else if(messageText.includes(' pomoc')) {
+    else if(messageText.includes(HelpKeyword)) {
         showHelp();
     }
 }
 
 // Menu provider
-function serveMenu() {
-    Axios.get('https://gimmedatapi.gear.host/api/ZascianekData').then(response => {
-        const menuDate = response.data.value.menuDate;
+async function serveMenu() {
+    Axios.get(GimmeDatAPIEndpoint).then(response => {
+        
+        var menuDate = response.data.menuDate.split("T")[0];
+        var mealsOfTheDay = getDishList(response.data.menu.mealsOfTheDay);
+        var deluxeMeals = getDishList(response.data.menu.deluxeMeals);
+        var soups = getDishList(response.data.menu.soups);
+
+        var message = menuDate;
+        message += '\n\n*Dania dnia:*'
+        message += mealsOfTheDay;
+        message += '\n\n*Dania deluxe:*'
+        message += deluxeMeals;
+        message += '\n\n*Zupy:*'
+        message += soups;
 
         const params = {
-            icon_emoji: ':date:'
+            icon_emoji: ':curry:'
         };
 
         bot.postMessageToGroup(
             SlackChannel,
-            `Data menu: ${menuDate}`,
+            `Data menu: ${message}`,
             params
         );
     });
-}
-
-// Chuck Norris Jokes
-function tellChuckNorrisJoke() {
-  Axios.get('http://api.icndb.com/jokes/random').then(res => {
-    const joke = res.data.value.joke;
-
-    const params = {
-      icon_emoji: ':laughing:'
-    };
-
-    bot.postMessageToGroup(
-        SlackChannel,
-        `Chuck Norris: ${joke}`,
-        params);
-  });
 }
 
 // Show Help
@@ -94,4 +90,19 @@ function showHelp() {
       HelpMessage,
       params
     );
-  }
+}
+
+function getDishList(jsonList) {
+    var tempList = '';
+
+    try {
+        jsonList.forEach(item => {
+            tempList += '\n'    
+            tempList += item
+        });
+    } catch (error) {
+        console.log(error);
+    }
+
+    return tempList;
+}
