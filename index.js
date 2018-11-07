@@ -51,20 +51,20 @@ function handleMessage(messageText) {
 }
 
 // Menu provider
-async function serveMenu() {
+function serveMenu() {
     Axios.get(GimmeDatAPIEndpoint).then(response => {
         
-        var menuDate = response.data.menuDate.split("T")[0];
+        const menuDate = response.data.menuDate.split("T")[0];
         var mealsOfTheDay = getDishList(response.data.menu.mealsOfTheDay);
         var deluxeMeals = getDishList(response.data.menu.deluxeMeals);
         var soups = getDishList(response.data.menu.soups);
 
         var message = menuDate;
-        message += '\n\n*Dania dnia:*'
+        message += '\n\n*Dania dnia:*';
         message += mealsOfTheDay;
-        message += '\n\n*Dania deluxe:*'
+        message += '\n\n*Dania deluxe:*';
         message += deluxeMeals;
-        message += '\n\n*Zupy:*'
+        message += '\n\n*Zupy:*';
         message += soups;
 
         const params = {
@@ -93,16 +93,7 @@ function showHelp() {
 }
 
 function getDishList(jsonList) {
-    var tempList = '';
-
-    try {
-        jsonList.forEach(item => {
-            tempList += '\n'    
-            tempList += item
-        });
-    } catch (error) {
-        console.log(error);
-    }
-
+    var tempList = '\n';
+    tempList += jsonList.join('\n')
     return tempList;
 }
