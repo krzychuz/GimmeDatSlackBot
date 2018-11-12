@@ -7,7 +7,6 @@ const bot = new SlackBot({
     name : BotData.getBotName()
 });
 
-const SlackChannel = 'zasciankowemenu';
 const WelcomeMessage = 'Eloszka, przygotujcie się na to, że dostaniecie dzisiejsze menu :3';
 const HelpMessage = `Napisz '@zascianekbot dzisiaj' aby dostać informację o dzisiejszym menu.`;
 const ZascianekKeyword = 'dzisiaj';
@@ -37,21 +36,21 @@ bot.on('message', data => {
         return;
     }
   
-    handleMessage(data.text);
+    handleMessage(data.text, data.channel);
   });
 
 // Message responder
-function handleMessage(messageText) {
+function handleMessage(messageText, communicationChannel) {
     if(messageText.includes(ZascianekKeyword)) {
-        serveMenu();
+        serveMenu(communicationChannel);
     }
     else if(messageText.includes(HelpKeyword)) {
-        showHelp();
+        showHelp(communicationChannel);
     }
 }
 
 // Menu provider
-function serveMenu() {
+function serveMenu(communicationChannel) {
     Axios.get(GimmeDatAPIEndpoint).then(response => {
         
         const menuDate = response.data.menuDate.split("T")[0];
@@ -59,7 +58,8 @@ function serveMenu() {
         var deluxeMeals = getDishList(response.data.menu.deluxeMeals);
         var soups = getDishList(response.data.menu.soups);
 
-        var message = menuDate;
+        var message = 'Data menu: ' 
+        message += menuDate;
         message += '\n\n*Dania dnia:*';
         message += mealsOfTheDay;
         message += '\n\n*Dania deluxe:*';
@@ -71,9 +71,9 @@ function serveMenu() {
             icon_emoji: ':curry:'
         };
 
-        bot.postMessageToGroup(
-            SlackChannel,
-            `Data menu: ${message}`,
+        bot.postMessage(
+            communicationChannel,
+            `${message}`,
             params
         );
     });
@@ -85,8 +85,8 @@ function showHelp() {
       icon_emoji: ':question:'
     };
   
-    bot.postMessageToGroup(
-      SlackChannel,
+    bot.postMessage(
+      communicationChannel,
       HelpMessage,
       params
     );
