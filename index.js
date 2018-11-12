@@ -81,7 +81,7 @@ function serveMenu(communicationChannel) {
 }
 
 // Show Help
-function showHelp() {
+function showHelp(communicationChannel) {
     const params = {
       icon_emoji: ':question:'
     };
