@@ -58,7 +58,7 @@ function serveMenu(communicationChannel) {
         var deluxeMeals = getDishList(response.data.menu.deluxeMeals);
         var soups = getDishList(response.data.menu.soups);
 
-        var message = 'Data menu: ' 
+        var message = 'Data menu: ';
         message += menuDate;
         message += '\n\n*Dania dnia:*';
         message += mealsOfTheDay;
