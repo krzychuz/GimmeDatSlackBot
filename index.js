@@ -7,12 +7,13 @@ const bot = new SlackBot({
     name : BotData.getBotName()
 });
 
+const DefaultSlackChannel = 'zasciankowemenu';
 const WelcomeMessage = 'Eloszka, przygotujcie się na to, że dostaniecie dzisiejsze menu :3';
 const HelpMessage = `Napisz '@zascianekbot dzisiaj' aby dostać informację o dzisiejszym menu.`;
 const ZascianekKeyword = 'dzisiaj';
 const HelpKeyword = 'pomoc';
 
-const GimmeDatAPIEndpoint = 'http://localhost:51916/api/ZascianekData';
+const GimmeDatAPIEndpoint = 'https://gimmedatapi.gear.host/api/ZascianekData';
 
 // Start handler
 bot.on('start', () => {
@@ -21,7 +22,7 @@ bot.on('start', () => {
     };
     
     bot.postMessageToGroup(
-        SlackChannel,
+        DefaultSlackChannel,
         WelcomeMessage,
         params
     );
