@@ -1,19 +1,25 @@
 const SlackBot = require('slackbots');
 const Axios = require('axios');
 const BotData = require('./bot-data.js');
-
 const bot = new SlackBot({
     token : BotData.getBotToken(),
     name : BotData.getBotName()
 });
 
-const DefaultSlackChannel = 'zasciankowemenu';
+const DefaultSlackChannel = 'zasciankowemenuTest';
 const WelcomeMessage = 'Eloszka, przygotujcie się na to, że dostaniecie dzisiejsze menu :3';
 const HelpMessage = `Napisz '@zascianekbot dzisiaj' aby dostać informację o dzisiejszym menu.`;
+const UnknownMessage = 'Nie rozumiem :disappointed_relieved: ';
+const UnknownMessageMealQuestion =  ['Czy wiesz, że dzisiaj można zjeść ',
+                                        'Może skusisz się na ',
+                                        'W zamian spróbujesz może '
+                                    ]
 const ZascianekKeyword = 'dzisiaj';
 const HelpKeyword = 'pomoc';
 
 const GimmeDatAPIEndpoint = 'https://gimmedatapi.gear.host/api/ZascianekData';
+
+var meals = [];
 
 // Start handler
 bot.on('start', () => {
@@ -33,21 +39,64 @@ bot.on('error', error => console.log(error));
 
 // Message Handler
 bot.on('message', data => {
-    if (data.type !== 'message') {
+
+    if(isUserMessage(data) === false)
+    {
         return;
     }
   
-    handleMessage(data.text, data.channel);
+    var dataText = data.text.toLowerCase();
+
+    var result = handleMessage(dataText, data.channel);
+
+    if(result === false)
+    {
+        onUnknownMessage(data.channel);
+    }
   });
+
+function onUnknownMessage(communicationChannel){
+    var message = UnknownMessage;
+
+    UnknownMessageMealQuestion.GetRandom();
+
+    if (areMealsFetched())
+    {
+        message += UnknownMessageMealQuestion.GetRandom() + meals.GetRandom().toLowerCase() + '?';
+    }
+
+    sendMessage(communicationChannel, message, ':cry:');
+}
+
+//we can check here if the message has been fetched. Should be reworked
+function areMealsFetched() {
+    return meals.length !== 0;
+}
+
+function isUserMessage(data) {
+    if(data.user === undefined || data.type === undefined)
+    {
+        return false;
+    }
+
+    var isMessage = data.type === 'message';
+    var isUserMessage = data.user !== BotData.getBotName();
+
+    return isMessage && isUserMessage;
+}
 
 // Message responder
 function handleMessage(messageText, communicationChannel) {
     if(messageText.includes(ZascianekKeyword)) {
         serveMenu(communicationChannel);
+        return true;
     }
     else if(messageText.includes(HelpKeyword)) {
         showHelp(communicationChannel);
+        return true;
     }
+
+    return false;
 }
 
 // Menu provider
@@ -68,28 +117,28 @@ function serveMenu(communicationChannel) {
         message += '\n\n*Zupy:*';
         message += soups;
 
-        const params = {
-            icon_emoji: ':curry:'
-        };
+        //temporary solution
+        meals = mealsOfTheDay.split("\n");
+        meals = meals.filter(function(e){return e}); 
 
-        bot.postMessage(
-            communicationChannel,
-            `${message}`,
-            params
-        );
+        sendMessage(communicationChannel, message, ':curry:');
     });
 }
 
 // Show Help
 function showHelp(communicationChannel) {
+    sendMessage(communicationChannel, HelpMessage, ':question:');
+}
+
+function sendMessage(communicationChannel, message, emoji) {
     const params = {
-      icon_emoji: ':question:'
+        icon_emoji: emoji
     };
-  
+
     bot.postMessage(
-      communicationChannel,
-      HelpMessage,
-      params
+        communicationChannel,
+        message,
+        params
     );
 }
 
@@ -98,3 +147,11 @@ function getDishList(jsonList) {
     tempList += jsonList.join('\n')
     return tempList;
 }
+
+Object.defineProperty(Array.prototype, "GetRandom", {
+    value: function GetRandom() {
+        return this[Math.floor(Math.random() * this.length)];
+    },
+    writable: true,
+    configurable: true
+});
