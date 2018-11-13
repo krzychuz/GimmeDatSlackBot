@@ -8,23 +8,28 @@ const bot = new SlackBot({
 });
 
 const DefaultSlackChannel = 'zasciankowemenu';
+const DefaultParams = {
+    icon_emoji: ':robot_face:'
+  };
+
 const WelcomeMessage = 'Eloszka, przygotujcie się na to, że dostaniecie dzisiejsze menu :3';
 const HelpMessage = `Napisz '@zascianekbot dzisiaj' aby dostać informację o dzisiejszym menu.`;
-const ZascianekKeyword = 'dzisiaj';
+const HelloMessage = 'Siema, siema! Mam nadzieję, że u Ciebie wszystko w porządku!';
+const YouAreWelcomeMessage = 'Nie ma za co! Polecam się na przyszłość!';
+
+const ZascianekKeywords = ['dzisiaj', 'menu', 'lunch', 'zascianku', 'obiad'];
+const HelloKeywords = ['cześć', 'hej', 'elo', 'siemaneczko', 'siema', 'witaj'];
+const ThankYouKeywords = ['dzięki', 'dziena', 'dzieny', 'dziękuję', 'thx', 'ty'];
 const HelpKeyword = 'pomoc';
 
 const GimmeDatAPIEndpoint = 'https://gimmedatapi.gear.host/api/ZascianekData';
 
 // Start handler
-bot.on('start', () => {
-    const params = {
-        icon_emoji: ':robot_face:'
-    };
-    
+bot.on('start', () => {   
     bot.postMessageToGroup(
         DefaultSlackChannel,
         WelcomeMessage,
-        params
+        DefaultParams
     );
 });
 
@@ -33,7 +38,7 @@ bot.on('error', error => console.log(error));
 
 // Message Handler
 bot.on('message', data => {
-    if (data.type !== 'message') {
+    if (data.type !== 'message' || data.subtype == 'bot_message') {
         return;
     }
   
@@ -42,11 +47,17 @@ bot.on('message', data => {
 
 // Message responder
 function handleMessage(messageText, communicationChannel) {
-    if(messageText.includes(ZascianekKeyword)) {
+    if(messageText.includes(HelpKeyword)) {
+        showHelp(communicationChannel);
+    }
+    else if (messageContainKeywords(messageText, ZascianekKeywords)) {
         serveMenu(communicationChannel);
     }
-    else if(messageText.includes(HelpKeyword)) {
-        showHelp(communicationChannel);
+    else if (messageContainKeywords(messageText, HelloKeywords)) {
+        sayHello(communicationChannel);
+    }
+    else if (messageContainKeywords(messageText, ThankYouKeywords)) {
+        sayYouAreWelcome(communicationChannel);
     }
 }
 
@@ -82,14 +93,28 @@ function serveMenu(communicationChannel) {
 
 // Show Help
 function showHelp(communicationChannel) {
-    const params = {
-      icon_emoji: ':question:'
-    };
-  
     bot.postMessage(
       communicationChannel,
       HelpMessage,
-      params
+      DefaultParams
+    );
+}
+
+// Say hello
+function sayHello(communicationChannel) {
+    bot.postMessage(
+      communicationChannel,
+      HelloMessage,
+      DefaultParams
+    );
+}
+
+// Say you're welcome
+function sayYouAreWelcome(communicationChannel) {
+    bot.postMessage(
+      communicationChannel,
+      YouAreWelcomeMessage,
+      DefaultParams
     );
 }
 
@@ -97,4 +122,20 @@ function getDishList(jsonList) {
     var tempList = '\n';
     tempList += jsonList.join('\n')
     return tempList;
+}
+
+function messageContainKeywords(message, keywords) {
+    if(!Array.isArray(keywords)) {
+        console.error(`${keywords} is not Array type!`);
+        return false;
+    }
+
+    var keywordFound = false;
+    keywords.some(keyword => {
+        if(message.includes(keyword)) {
+            keywordFound = true;
+        }
+    });
+
+    return keywordFound;
 }
